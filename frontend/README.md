@@ -1,46 +1,91 @@
-# Getting Started with Create React App
+# gvm_kpi
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Small demos/prototypes for KPI-related work, plus a full-stack sample app (`sunvolt_demo`).
 
-## Available Scripts
+## Project Layout
 
-In the project directory, you can run:
+| Path | What it is |
+| --- | --- |
+| `sunvolt_demo/backend/` | Django project (settings/urls) |
+| `sunvolt_demo/api/` | Django REST Framework app (a simple `MyData` API) |
+| `sunvolt_demo/frontend/` | React (Create React App) frontend |
+| `main_old.py` | Standalone FastAPI example (lead scoring + MySQL signup) |
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## sunvolt_demo (Django + React)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Prerequisites
 
-### `npm test`
+- Python 3.x (`python3`)
+- Node.js + npm
+- PostgreSQL (Django settings are currently configured for Postgres)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 1) Backend (Django)
 
-### `npm run build`
+From the repo root:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+cd sunvolt_demo
+python3 -m venv venv
+source venv/bin/activate
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+python3 -m pip install -U pip
+# Install required packages for your environment (Django, DRF, CORS, Postgres driver, etc.)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+python3 manage.py migrate
+python3 manage.py runserver
+```
 
-### `npm run eject`
+- API base URL: `http://localhost:8000/api/`
+- Admin: `http://localhost:8000/admin/`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+#### Database configuration
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Update your local DB settings in `sunvolt_demo/backend/settings.py` (host/port/user/password/dbname) before running migrations.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### 2) API Endpoints
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+`MyData` list/create:
 
-## Learn More
+- `GET /api/data/`
+- `POST /api/data/`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Example:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+curl -X POST http://localhost:8000/api/data/ \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Alice","email":"alice@example.com"}'
+```
+
+### 3) Frontend (React)
+
+```bash
+cd sunvolt_demo/frontend
+npm install
+npm start
+```
+
+- Dev server: `http://localhost:3000`
+
+If you call the Django API from the frontend, ensure your frontend points to `http://localhost:8000` (or set up a CRA proxy).
+
+---
+
+## `main_old.py` (FastAPI example)
+
+Endpoints:
+
+- `POST /predict_score`: rule-based lead scoring
+- `POST /signup`: inserts a user into a MySQL table (`users`) via `pymysql`
+
+Run:
+
+```bash
+python3 -m pip install fastapi uvicorn pymysql
+uvicorn main_old:app --reload
+```
+
+Update the MySQL connection parameters inside `main_old.py` for your environment.
+
